@@ -1,0 +1,8 @@
+{
+  "name": "Dili glitched world escape ",
+  "description": "You pilot Dili, an agile robotic digital mascot trapped inside a corrupt, crumbling mainframe. A catastrophicomaly known as The Glitch is collapsing memory sectors behind you.  must sprint across suspended data circuits, leap over plasma spikes, navigate patrolling sawblades, collect energy bits, and escape through \n",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
