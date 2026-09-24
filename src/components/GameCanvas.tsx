@@ -12,8 +12,8 @@ const I = { jsx: _jsx, jsxs: _jsxs };
 var $e = class {
     constructor(e = ``, t = ``, n = 0, r = 0, i = 100, a = 3) {
       ((this.elevation = 24),
-        (this.beamHeight = 8),
-        (this.beamWidth = 60),
+        (this.beamHeight = 10),
+        (this.beamWidth = 84),
         (this.minX = 0),
         (this.maxX = 100),
         (this.x = 0),
@@ -33,15 +33,15 @@ var $e = class {
         (this.platformId = t),
         (this.levelNumber = a),
         (this.elevation = 24),
-        (this.beamHeight = 8),
-        (this.beamWidth = Math.max(50, Math.min(85, i * 0.42))),
-        (this.minX = n + 12),
-        (this.maxX = n + i - this.beamWidth - 12));
+        (this.beamHeight = 10),
+        (this.beamWidth = Math.max(76, Math.min(96, i * 0.18))),
+        (this.minX = n + 45),
+        (this.maxX = n + i - this.beamWidth - 45));
       let o = Math.max(10, this.maxX - this.minX);
       ((this.x = this.minX + Math.random() * o),
         (this.y = r - this.elevation),
         (this.sweepDir = Math.random() > 0.5 ? 1 : -1),
-        (this.sweepSpeed = 85 + (a - 1) * 28),
+        (this.sweepSpeed = 75 + (a - 1) * 22),
         (this.pulseTimer = Math.random() * Math.PI * 2),
         (this.sparkTimer = 0),
         (this.isActive = !0));
@@ -73,66 +73,102 @@ var $e = class {
         i = n + this.beamWidth,
         a = this.y + this.beamHeight / 2,
         o = this.y + this.elevation;
-      ((e.fillStyle = `rgba(244, 63, 94, 0.12)`),
-        e.fillRect(r, a, this.beamWidth, this.elevation),
-        (e.fillStyle = `rgba(251, 113, 133, 0.55)`),
-        e.fillRect(r + 4, o - 2, this.beamWidth - 8, 2));
-      let s = Math.sin(this.pulseTimer) * 2,
-        c = e.createLinearGradient(
-          0,
-          this.y - 8,
-          0,
-          this.y + this.beamHeight + 8,
-        );
-      (c.addColorStop(0, `rgba(244, 63, 94, 0)`),
-        c.addColorStop(0.5, `rgba(244, 63, 94, 0.55)`),
-        c.addColorStop(1, `rgba(244, 63, 94, 0)`),
-        (e.fillStyle = c),
-        e.fillRect(
-          r,
-          this.y - 5 - s,
-          this.beamWidth,
-          this.beamHeight + 10 + s * 2,
-        ),
-        (e.strokeStyle = `#f43f5e`),
-        (e.lineWidth = 5),
-        e.beginPath(),
-        e.moveTo(r, a),
-        e.lineTo(i, a),
-        e.stroke(),
-        (e.strokeStyle = `#ffffff`),
-        (e.lineWidth = 2),
-        e.beginPath(),
-        e.moveTo(r, a),
-        e.lineTo(i, a),
-        e.stroke(),
-        [r, i].forEach((t) => {
-          ((e.fillStyle = `#0f172a`),
-            (e.strokeStyle = `#38bdf8`),
-            (e.lineWidth = 1.5),
-            e.beginPath(),
-            e.arc(t, a, 5.5, 0, Math.PI * 2),
-            e.fill(),
-            e.stroke(),
-            (e.fillStyle = `#ffffff`),
-            e.beginPath(),
-            e.arc(t, a, 2, 0, Math.PI * 2),
-            e.fill());
-        }));
+
+      // Vertical energy barrier down to ground
+      let curtainGrad = e.createLinearGradient(0, a, 0, o);
+      curtainGrad.addColorStop(0, "rgba(244, 63, 94, 0.45)");
+      curtainGrad.addColorStop(0.7, "rgba(244, 63, 94, 0.2)");
+      curtainGrad.addColorStop(1, "rgba(251, 113, 133, 0.7)");
+      e.fillStyle = curtainGrad;
+      e.fillRect(r, a, this.beamWidth, this.elevation);
+
+      // Ground scorch and white contact line on the platform floor
+      e.fillStyle = "rgba(255, 255, 255, 0.85)";
+      e.fillRect(r + 6, o - 2, this.beamWidth - 12, 2.5);
+      e.fillStyle = "#f43f5e";
+      e.fillRect(r + 2, o - 1, this.beamWidth - 4, 1.5);
+
+      // Pulsing outer laser beam glow
+      let s = Math.sin(this.pulseTimer) * 2.5;
+      let c = e.createLinearGradient(
+        0,
+        this.y - 10,
+        0,
+        this.y + this.beamHeight + 10,
+      );
+      c.addColorStop(0, "rgba(244, 63, 94, 0)");
+      c.addColorStop(0.5, "rgba(244, 63, 94, 0.65)");
+      c.addColorStop(1, "rgba(244, 63, 94, 0)");
+      e.fillStyle = c;
+      e.fillRect(
+        r,
+        this.y - 6 - s,
+        this.beamWidth,
+        this.beamHeight + 12 + s * 2,
+      );
+
+      // Main crimson laser beam
+      e.strokeStyle = "#f43f5e";
+      e.lineWidth = 6;
+      e.beginPath();
+      e.moveTo(r, a);
+      e.lineTo(i, a);
+      e.stroke();
+
+      // Bright inner core
+      e.strokeStyle = "#fda4af";
+      e.lineWidth = 3.5;
+      e.beginPath();
+      e.moveTo(r, a);
+      e.lineTo(i, a);
+      e.stroke();
+
+      // White-hot center filament
+      e.strokeStyle = "#ffffff";
+      e.lineWidth = 1.8;
+      e.beginPath();
+      e.moveTo(r, a);
+      e.lineTo(i, a);
+      e.stroke();
+
+      // Left and right emitter terminal nodes on the beam
+      [r, i].forEach((pos) => {
+        e.fillStyle = "#0f172a";
+        e.strokeStyle = "#f43f5e";
+        e.lineWidth = 1.8;
+        e.beginPath();
+        e.arc(pos, a, 6.5, 0, Math.PI * 2);
+        e.fill();
+        e.stroke();
+
+        e.fillStyle = "#ffffff";
+        e.beginPath();
+        e.arc(pos, a, 2.5, 0, Math.PI * 2);
+        e.fill();
+      });
+
+      // Direction indicator arrow
       let l = this.sweepDir,
         u = r + this.beamWidth / 2;
-      ((e.fillStyle = `#ffffff`),
-        e.beginPath(),
-        e.moveTo(u + l * 6, a),
-        e.lineTo(u - l * 4, a - 4),
-        e.lineTo(u - l * 4, a + 4),
-        e.closePath(),
-        e.fill(),
-        (e.fillStyle = `#f43f5e`),
-        (e.font = `900 9px monospace`),
-        (e.textAlign = `center`),
-        e.fillText(`◄ LASER ►`, u, this.y - 8),
-        e.restore());
+      e.fillStyle = "#ffffff";
+      e.beginPath();
+      e.moveTo(u + l * 7, a);
+      e.lineTo(u - l * 5, a - 5);
+      e.lineTo(u - l * 5, a + 5);
+      e.closePath();
+      e.fill();
+
+      // Warning badge above beam
+      e.fillStyle = "rgba(15, 23, 42, 0.85)";
+      e.fillRect(u - 30, this.y - 18, 60, 12);
+      e.strokeStyle = "#f43f5e";
+      e.lineWidth = 1;
+      e.strokeRect(u - 30, this.y - 18, 60, 12);
+      e.fillStyle = "#f43f5e";
+      e.font = "900 9px monospace";
+      e.textAlign = "center";
+      e.fillText("◄ LASER ►", u, this.y - 9);
+      e.restore();
     }
   },
   et = class {
@@ -1010,18 +1046,22 @@ var $e = class {
             let o = t === `normal` || t === `moving` || t === `breaking`,
               s = Math.random() < r.hazardChance && o,
               c = null;
-            if (s) {
+            if (e === 3) {
+              // Guaranteed showcase of Big Ground Laser Platform early on run
+              c = `horizontal_laser`;
+              s = !0;
+            } else if (s) {
               let e = [`spikes`];
               if (i === 1) {
-                e = [`spikes`, `spikes`, `firewall_vent`];
+                e = [`spikes`, `horizontal_laser`, `firewall_vent`];
               } else if (i === 2) {
-                e = [`spikes`, `sawblade`, `firewall_vent`];
+                e = [`spikes`, `horizontal_laser`, `sawblade`, `firewall_vent`];
               } else if (i === 3) {
-                e = [`spikes`, `floating_orb`, `sawblade`, `firewall_vent`];
+                e = [`spikes`, `horizontal_laser`, `floating_orb`, `sawblade`, `firewall_vent`];
               } else if (i === 4) {
-                e = [`firewall_vent`, `sawblade`, `laser`, `spikes`];
+                e = [`firewall_vent`, `horizontal_laser`, `sawblade`, `laser`, `spikes`];
               } else if (i === 5) {
-                e = [`firewall_vent`, `laser`, `sawblade`, `floating_orb`, `glitch_drone`];
+                e = [`firewall_vent`, `horizontal_laser`, `laser`, `sawblade`, `floating_orb`, `glitch_drone`];
               } else if (i === 6) {
                 e = [`horizontal_laser`, `laser`, `glitch_drone`, `spikes`, `sawblade`];
               } else if (i === 7) {
@@ -1031,7 +1071,7 @@ var $e = class {
               } else if (i === 9) {
                 e = [`horizontal_laser`, `falling_block`, `crusher`, `glitch_drone`, `electric_arc`, `sawblade`];
               } else {
-                e = [`spikes`, `firewall_vent`, `laser`, `electric_arc`, `falling_block`];
+                e = [`horizontal_laser`, `spikes`, `firewall_vent`, `laser`, `electric_arc`, `falling_block`];
               }
               c = e[Math.floor(Math.random() * e.length)];
             }
@@ -1043,7 +1083,10 @@ var $e = class {
                 (d = Math.max(d + 140 + Math.random() * 30, 320)),
               c === `sawblade` &&
                 ((d = Math.max(d + 220 + Math.random() * 40, 420)),
-                  t === `breaking` && (t = `normal`)));
+                  t === `breaking` && (t = `normal`)),
+              c === `horizontal_laser` &&
+                ((d = Math.max(d + 340 + Math.random() * 60, 540)),
+                  (t = `normal`)));
             let f = r.minGap,
               p = r.maxGap,
               m = f + Math.random() * (p - f);
@@ -1058,8 +1101,9 @@ var $e = class {
                 x: _,
                 y: g,
                 width: d,
-                height: 44,
+                height: c === `horizontal_laser` ? 52 : 44,
                 type: t,
+                hasGroundLaser: c === `horizontal_laser`,
               };
             (t === `moving` &&
               (Math.random() > 0.5
@@ -1090,7 +1134,10 @@ var $e = class {
                   ie.current.push({
                     id: `coin_${e}_${t}`,
                     x: n,
-                    y: v.y - 32,
+                    y:
+                      c === `horizontal_laser` && t >= 3 && t <= b - 4
+                        ? v.y - 68
+                        : v.y - 32,
                     width: 18,
                     height: 18,
                     type: `coin`,
@@ -1249,13 +1296,7 @@ var $e = class {
                     });
               }
             }
-            (c !== `spikes` &&
-              i >= 2 &&
-              i <= 3 &&
-              d >= 175 &&
-              Math.random() < 0.2 &&
-              j.current.acquire(`hl_sweep_${e}`, v.id, _, v.y, d, i),
-              m > 95 &&
+            (m > 95 &&
                 Math.random() <
                   (i >= 4 ? 0.2 : i === 3 ? 0.35 : i === 2 ? 0.4 : 0.28) &&
                 (i >= 2 && Math.random() < 0.4
@@ -2209,7 +2250,106 @@ var $e = class {
         Ae = (e, t, n) => {
           let r = t.x - n + (t.shakeOffset || 0);
           if (!(r + t.width < -50 || r > 440)) {
-            if (t.type === `normal`) {
+            if (t.hasGroundLaser) {
+              e.save();
+              // Outer drop glow
+              e.fillStyle = `rgba(244, 63, 94, 0.2)`;
+              e.fillRect(r + 8, t.y + t.height, t.width - 16, 10);
+
+              // Main platform body (chunky, armored chassis)
+              let platGrad = e.createLinearGradient(0, t.y, 0, t.y + t.height);
+              platGrad.addColorStop(0, `#131b2e`);
+              platGrad.addColorStop(0.35, `#0b0f1a`);
+              platGrad.addColorStop(1, `#040711`);
+              e.fillStyle = platGrad;
+              e.beginPath();
+              e.roundRect(r, t.y, t.width, t.height, [6, 6, 4, 4]);
+              e.fill();
+
+              // Platform border with crimson glow
+              e.strokeStyle = `rgba(244, 63, 94, 0.75)`;
+              e.lineWidth = 1.5;
+              e.stroke();
+
+              // Top laser runway rail
+              e.fillStyle = `#1e293b`;
+              e.fillRect(r + 2, t.y + 1, t.width - 4, 8);
+
+              // Recessed glowing laser energy track
+              e.fillStyle = `#4c0519`;
+              e.fillRect(r + 8, t.y + 3, t.width - 16, 4);
+              e.fillStyle = `#f43f5e`;
+              e.fillRect(r + 10, t.y + 4.5, t.width - 20, 1.8);
+
+              // Neon top edge highlight
+              e.fillStyle = `#fb7185`;
+              e.fillRect(r, t.y, t.width, 1.5);
+
+              // Left & right heavy laser terminal pylons
+              let pylonW = 16;
+              // Left pylon
+              e.fillStyle = `#0f172a`;
+              e.fillRect(r + 2, t.y - 7, pylonW, t.height + 5);
+              e.strokeStyle = `#f43f5e`;
+              e.lineWidth = 1.5;
+              e.strokeRect(r + 2, t.y - 7, pylonW, t.height + 5);
+              e.fillStyle = `#f43f5e`;
+              e.beginPath();
+              e.arc(r + 2 + pylonW / 2, t.y - 2, 4, 0, Math.PI * 2);
+              e.fill();
+              e.fillStyle = `#ffffff`;
+              e.beginPath();
+              e.arc(r + 2 + pylonW / 2, t.y - 2, 1.5, 0, Math.PI * 2);
+              e.fill();
+
+              // Right pylon
+              e.fillStyle = `#0f172a`;
+              e.fillRect(r + t.width - pylonW - 2, t.y - 7, pylonW, t.height + 5);
+              e.strokeStyle = `#f43f5e`;
+              e.lineWidth = 1.5;
+              e.strokeRect(r + t.width - pylonW - 2, t.y - 7, pylonW, t.height + 5);
+              e.fillStyle = `#f43f5e`;
+              e.beginPath();
+              e.arc(r + t.width - pylonW / 2 - 2, t.y - 2, 4, 0, Math.PI * 2);
+              e.fill();
+              e.fillStyle = `#ffffff`;
+              e.beginPath();
+              e.arc(r + t.width - pylonW / 2 - 2, t.y - 2, 1.5, 0, Math.PI * 2);
+              e.fill();
+
+              // Diagonal warning hazard chevron band across the upper center
+              e.save();
+              e.beginPath();
+              e.rect(r + pylonW + 8, t.y + 11, t.width - (pylonW + 8) * 2, 10);
+              e.clip();
+              e.fillStyle = `#1e1b4b`;
+              e.fillRect(r + pylonW + 8, t.y + 11, t.width - (pylonW + 8) * 2, 10);
+              let stripeSpacing = 20;
+              e.fillStyle = `rgba(244, 63, 94, 0.5)`;
+              for (let sx = r + pylonW; sx < r + t.width - pylonW; sx += stripeSpacing) {
+                e.beginPath();
+                e.moveTo(sx, t.y + 21);
+                e.lineTo(sx + 8, t.y + 11);
+                e.lineTo(sx + 14, t.y + 11);
+                e.lineTo(sx + 6, t.y + 21);
+                e.closePath();
+                e.fill();
+              }
+              e.restore();
+
+              // Prominent high-tech digital readout on the platform fascia
+              e.fillStyle = `#fecdd3`;
+              e.font = `900 10px monospace`;
+              e.textAlign = `center`;
+              e.fillText(`⚡ BIG GROUND LASER PLATFORM // CAUTION ⚡`, r + t.width / 2, t.y + 36);
+
+              // Coolant exhaust vent grilles on lower edge
+              e.fillStyle = `rgba(244, 63, 94, 0.4)`;
+              for (let vx = r + 36; vx < r + t.width - 36; vx += 36) {
+                e.fillRect(vx, t.y + t.height - 8, 16, 4);
+              }
+              e.restore();
+            } else if (t.type === `normal`) {
               ((e.fillStyle = `#090d1a`),
                 e.beginPath(),
                 e.roundRect(r, t.y, t.width, t.height, [4, 4, 2, 2]),

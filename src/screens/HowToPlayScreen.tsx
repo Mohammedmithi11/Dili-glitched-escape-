@@ -324,13 +324,13 @@ export const HowToPlayScreen = ({ onClose: e }) =>
                     (0, I.jsxs)(`div`, {
                       className: `flex items-center gap-1.5 col-span-2`,
                       children: [
-                        (0, I.jsx)(`span`, { children: `🔴` }),
+                        (0, I.jsx)(`span`, { children: `⚡` }),
                         (0, I.jsxs)(`span`, {
                           children: [
                             (0, I.jsx)(`strong`, {
-                              children: `Sweeping Laser:`,
+                              children: `Big Ground Laser Platform:`,
                             }),
-                            ` Horizontal beam sweeps across platforms — jump over!`,
+                            ` Massive armored runway with a sweeping ground laser beam — time your jump to clear it and collect high-value coin arcs!`,
                           ],
                         }),
                       ],
