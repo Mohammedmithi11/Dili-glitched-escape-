@@ -219,6 +219,46 @@ export const MenuScreen = ({
           (0, I.jsxs)(`div`, {
             className: `w-full max-w-xs flex flex-col gap-1.5`,
             children: [
+              (0, I.jsxs)(`button`, {
+                onClick: u,
+                className: `w-full py-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-fuchsia-500/40 hover:border-fuchsia-400 text-fuchsia-200 font-bold text-xs uppercase tracking-wider flex items-center justify-between shadow-md active:scale-98 transition-all cursor-pointer group mb-0.5`,
+                title: `Choose from different playable characters`,
+                children: [
+                  (0, I.jsxs)(`div`, {
+                    className: `flex items-center gap-2`,
+                    children: [
+                      (0, I.jsx)(`div`, {
+                        className: `w-6 h-6 rounded-lg border flex items-center justify-center shrink-0`,
+                        style: {
+                          borderColor: h.palette.suitStroke,
+                          background: `linear-gradient(135deg, ${h.palette.suitGradStart} 0%, ${h.palette.capeGradMid} 100%)`,
+                        },
+                        children: (0, I.jsx)(`div`, {
+                          className: `w-2 h-2 rounded-full border border-white/60`,
+                          style: { backgroundColor: h.palette.eyeColor },
+                        }),
+                      }),
+                      (0, I.jsxs)(`div`, {
+                        className: `flex flex-col text-left`,
+                        children: [
+                          (0, I.jsxs)(`span`, {
+                            className: `text-[11px] font-black text-white group-hover:text-fuchsia-300`,
+                            children: [`HERO: `, h.name],
+                          }),
+                          (0, I.jsx)(`span`, {
+                            className: `text-[9px] font-mono text-cyan-400 font-bold`,
+                            children: h.perk?.statBonus || h.characterClass || `Standard Agility`,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  (0, I.jsx)(`span`, {
+                    className: `text-[10px] font-mono font-black bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40 px-2 py-0.5 rounded-full`,
+                    children: `SELECT HERO ⚡`,
+                  }),
+                ],
+              }),
               r > 1 &&
                 (0, I.jsxs)(`button`, {
                   onClick: () => c(r),

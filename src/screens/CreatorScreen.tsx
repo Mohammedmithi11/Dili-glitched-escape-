@@ -254,11 +254,9 @@ export const CreatorScreen = ({ onClose: e }) => {
                         `X Handle`,
                       ],
                     }),
-                    (0, I.jsx)(`a`, {
-                      href: `https://x.com/attract_ga29582`,
-                      target: `_blank`,
-                      rel: `noreferrer`,
-                      className: `text-xs font-mono font-bold text-sky-300 hover:underline truncate`,
+                    (0, I.jsx)(`span`, {
+                      onClick: () => r(`@attract_ga29582`, `xHandle`),
+                      className: `text-xs font-mono font-bold text-sky-300 hover:text-sky-200 cursor-pointer truncate`,
                       children: `@attract_ga29582`,
                     }),
                   ],

@@ -33,11 +33,25 @@ export interface SkinPalette {
   trailStyle: string;
 }
 
+export interface CharacterPerk {
+  name: string;
+  description: string;
+  statBonus: string;
+  jumpMult?: number;
+  speedMult?: number;
+  magnetMult?: number;
+  scoreMult?: number;
+  shieldBonus?: boolean;
+}
+
 export interface Skin {
   id: string;
   name: string;
   tagline: string;
   description: string;
+  characterClass?: string;
+  quote?: string;
+  perk?: CharacterPerk;
   price: number;
   rarity: 'Common' | 'Rare' | 'Epic' | 'Legendary';
   rarityColor: string;

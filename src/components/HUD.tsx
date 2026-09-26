@@ -3,6 +3,7 @@ import {
   Flag,
   CloudLightning,
   CloudRain,
+  Snowflake,
   Wind,
   Volume2,
   VolumeX,
@@ -106,22 +107,36 @@ export const HUD: React.FC<HUDProps> = ({
             )}
 
             <div
-              className={`self-start mt-0.5 px-2 py-0.5 rounded-full border text-[9px] font-mono font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm transition-all duration-300 ${
+              className={`self-start mt-0.5 px-2 py-0.5 rounded-full border text-[9px] font-mono font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1.5 shadow-sm transition-all duration-300 ${
                 weather === 'Glitch Storm'
-                  ? 'border-rose-500/50 bg-rose-950/70 text-rose-300 shadow-rose-900/40 animate-pulse'
-                  : weather === 'Data Rain'
-                    ? 'border-cyan-500/50 bg-cyan-950/70 text-cyan-300 shadow-cyan-900/40'
-                    : 'border-slate-500/50 bg-slate-900/70 text-slate-300'
+                  ? 'border-rose-500/60 bg-rose-950/80 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.4)] animate-pulse ring-1 ring-rose-500/50'
+                  : weather === 'Code Freeze'
+                    ? 'border-sky-400/60 bg-sky-950/85 text-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.4)] ring-1 ring-cyan-400/50'
+                    : weather === 'Data Rain'
+                      ? 'border-cyan-500/50 bg-cyan-950/70 text-cyan-300 shadow-cyan-900/40'
+                      : 'border-slate-500/50 bg-slate-900/70 text-slate-300'
               }`}
             >
               {weather === 'Glitch Storm' ? (
-                <CloudLightning className="w-2.5 h-2.5 text-rose-400" />
+                <CloudLightning className="w-2.5 h-2.5 text-rose-400 animate-bounce" />
+              ) : weather === 'Code Freeze' ? (
+                <Snowflake className="w-2.5 h-2.5 text-cyan-300 animate-spin" style={{ animationDuration: '6s' }} />
               ) : weather === 'Data Rain' ? (
                 <CloudRain className="w-2.5 h-2.5 text-cyan-400" />
               ) : (
                 <Wind className="w-2.5 h-2.5 text-slate-400" />
               )}
               <span>{weather}</span>
+              {weather === 'Glitch Storm' && (
+                <span className="text-[7px] font-mono px-1 py-0.2 rounded bg-rose-500/30 text-rose-200 border border-rose-400/50 font-black">
+                  CRITICAL
+                </span>
+              )}
+              {weather === 'Code Freeze' && (
+                <span className="text-[7px] font-mono px-1 py-0.2 rounded bg-cyan-500/30 text-cyan-200 border border-cyan-400/50 font-black">
+                  SUB-ZERO
+                </span>
+              )}
             </div>
           </div>
         </div>

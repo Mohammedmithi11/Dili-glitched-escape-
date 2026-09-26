@@ -265,7 +265,7 @@ export const DEFAULT_STATS: GameStats = {
   bossesDefeated: 0,
   lastCheckpoint: 1,
   unlockedLevel: 10,
-  unlockedSkins: ['classic'],
+  unlockedSkins: ['classic', 'volt_striker'],
   selectedSkin: 'classic',
   unlockedAchievements: [],
 };
@@ -285,8 +285,8 @@ export function getStoredStats(): GameStats {
       const parsed = JSON.parse(raw);
       const skins =
         Array.isArray(parsed.unlockedSkins) && parsed.unlockedSkins.length > 0
-          ? Array.from(new Set(['classic', ...parsed.unlockedSkins]))
-          : ['classic'];
+          ? Array.from(new Set(['classic', 'volt_striker', ...parsed.unlockedSkins]))
+          : ['classic', 'volt_striker'];
       const skin = parsed.selectedSkin && skins.includes(parsed.selectedSkin) ? parsed.selectedSkin : 'classic';
       return {
         ...DEFAULT_STATS,
@@ -300,7 +300,7 @@ export function getStoredStats(): GameStats {
   return {
     ...DEFAULT_STATS,
     unlockedLevel: 10,
-    unlockedSkins: ['classic'],
+    unlockedSkins: ['classic', 'volt_striker'],
     selectedSkin: 'classic',
   };
 }

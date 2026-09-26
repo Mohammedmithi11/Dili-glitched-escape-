@@ -375,33 +375,36 @@ var $e = class {
         (this.targetWeather = `Data Rain`),
         (this.transitionProgress = 1),
         (this.weatherCycleTimer = 0),
-        (this.weatherDuration = 22),
+        (this.weatherDuration = 20),
         (this.lightningFlash = 0),
-        (this.lightningTimer = 3.5),
+        (this.lightningTimer = 3.2),
         (this.activeLightningBolts = []),
         (this.rainDrops = []),
         (this.splashPool = []),
         (this.stormShards = []),
         (this.fogBands = []),
+        (this.frostParticles = []),
+        (this.weatherAlert = null),
         (this.currentLevel = 1),
+        (this.lastDynamicStage = ``),
         (this.time = 0),
         this.initPools());
     }
     initPools() {
-      let e = [`0`, `1`, `Ξ`, `λ`, `0x`, `♦`, `◊`, `#`, `%`, `∆`, `10`, `01`],
-        t = [`#22d3ee`, `#38bdf8`, `#34d399`, `#10b981`, `#a7f3d0`];
-      for (let n = 0; n < 48; n++)
+      let rainChars = [`0`, `1`, `Ξ`, `λ`, `0x`, `♦`, `◊`, `#`, `%`, `∆`, `10`, `01`],
+        rainColors = [`#22d3ee`, `#38bdf8`, `#34d399`, `#10b981`, `#a7f3d0`];
+      for (let n = 0; n < 52; n++)
         this.rainDrops.push({
           x: Math.random() * 450,
           y: Math.random() * 700 - 100,
-          speed: 350 + Math.random() * 260,
-          length: 12 + Math.random() * 22,
-          char: e[Math.floor(Math.random() * e.length)],
+          speed: 360 + Math.random() * 280,
+          length: 12 + Math.random() * 24,
+          char: rainChars[Math.floor(Math.random() * rainChars.length)],
           alpha: 0.35 + Math.random() * 0.45,
-          color: t[Math.floor(Math.random() * t.length)],
+          color: rainColors[Math.floor(Math.random() * rainColors.length)],
           headSize: Math.random() * 2.5 + 1.5,
         });
-      for (let e = 0; e < 18; e++)
+      for (let e = 0; e < 20; e++)
         this.splashPool.push({
           x: 0,
           y: 0,
@@ -410,21 +413,21 @@ var $e = class {
           alpha: 0,
           color: `#22d3ee`,
         });
-      let n = [`#f43f5e`, `#ec4899`, `#c084fc`, `#e11d48`, `#ffffff`];
-      for (let e = 0; e < 22; e++)
+      let stormColors = [`#f43f5e`, `#ec4899`, `#c084fc`, `#e11d48`, `#ffffff`];
+      for (let e = 0; e < 28; e++)
         this.stormShards.push({
           x: Math.random() * 500 - 50,
           y: Math.random() * 750 - 50,
-          vx: 380 + Math.random() * 280,
-          vy: 200 + Math.random() * 220,
-          width: 3 + Math.random() * 8,
-          height: 2 + Math.random() * 5,
-          alpha: 0.4 + Math.random() * 0.5,
-          color: n[Math.floor(Math.random() * n.length)],
+          vx: 420 + Math.random() * 320,
+          vy: 220 + Math.random() * 260,
+          width: 4 + Math.random() * 10,
+          height: 2 + Math.random() * 6,
+          alpha: 0.4 + Math.random() * 0.55,
+          color: stormColors[Math.floor(Math.random() * stormColors.length)],
           rotation: Math.random() * Math.PI,
-          rotSpeed: (Math.random() - 0.5) * 8,
+          rotSpeed: (Math.random() - 0.5) * 10,
         });
-      let r = [
+      let fogColors = [
         `rgba(56, 189, 248, 0.08)`,
         `rgba(99, 102, 241, 0.09)`,
         `rgba(148, 163, 184, 0.12)`,
@@ -439,284 +442,597 @@ var $e = class {
           speed: (e % 2 == 0 ? 1 : -1) * (0.8 + Math.random() * 0.9),
           phase: Math.random() * Math.PI * 2,
           thickness: 55 + Math.random() * 45,
-          color: r[e % r.length],
+          color: fogColors[e % fogColors.length],
           alpha: 0.7,
         });
+      let frostChars = [`❄`, `✦`, `◊`, `0x`, `::`, `♦`, `*`, `▫`, `00`],
+        frostColors = [`#e0f2fe`, `#bae6fd`, `#7dd3fc`, `#38bdf8`, `#ffffff`, `#67e8f9`];
+      for (let e = 0; e < 45; e++)
+        this.frostParticles.push({
+          x: Math.random() * 480 - 40,
+          y: Math.random() * 750 - 50,
+          vx: -(40 + Math.random() * 90),
+          vy: 80 + Math.random() * 120,
+          size: 8 + Math.random() * 12,
+          char: frostChars[Math.floor(Math.random() * frostChars.length)],
+          color: frostColors[Math.floor(Math.random() * frostColors.length)],
+          alpha: 0.35 + Math.random() * 0.55,
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 4,
+          phase: Math.random() * Math.PI * 2,
+        });
     }
-    setZone(e, t) {
-      if (this.currentLevel === t) return;
-      this.currentLevel = t;
-      let n = y[t - 1]?.defaultWeather || `Data Rain`;
-      this.transitionTo(n);
+    setZone(zoneId, levelNumber) {
+      this.currentLevel = levelNumber;
+      this.lastDynamicStage = ``;
+      let initialWeather = levelNumber === 10 ? `Glitch Storm` : `Data Rain`;
+      this.transitionTo(initialWeather);
     }
-    transitionTo(e) {
-      (this.targetWeather === e && this.transitionProgress >= 1) ||
-        ((this.currentWeather = this.targetWeather),
-        (this.targetWeather = e),
-        (this.transitionProgress = 0),
-        (this.weatherCycleTimer = 0),
-        this.onWeatherChange && this.onWeatherChange(e));
+    transitionTo(newWeather) {
+      if (this.targetWeather === newWeather && this.transitionProgress >= 1) return;
+      this.currentWeather = this.targetWeather;
+      this.targetWeather = newWeather;
+      this.transitionProgress = 0;
+      this.weatherCycleTimer = 0;
+      this.weatherAlert = {
+        title:
+          newWeather === `Code Freeze`
+            ? `ANOMALY: CODE FREEZE ❄️`
+            : newWeather === `Glitch Storm`
+              ? `CRITICAL ALERT: GLITCH STORM ⚡`
+              : newWeather === `Data Rain`
+                ? `STREAM: DATA RAIN 🌧️`
+                : `ATMOSPHERE: STATIC FOG 🌫️`,
+        subtitle:
+          newWeather === `Code Freeze`
+            ? `SUB-ZERO MEMORY LOCKDOWN • ESCALATING STRAIN`
+            : newWeather === `Glitch Storm`
+              ? `MAINFRAME INSTABILITY PEAK • MAXIMUM HAZARD`
+              : newWeather === `Data Rain`
+                ? `CIRCUITS CALIBRATED • NORMAL TELEMETRY`
+                : `DATA DESYNC DETECTED • LOW VISIBILITY`,
+        color:
+          newWeather === `Code Freeze`
+            ? `#38bdf8`
+            : newWeather === `Glitch Storm`
+              ? `#f43f5e`
+              : newWeather === `Data Rain`
+                ? `#22d3ee`
+                : `#cbd5e1`,
+        timer: 3.4,
+        maxTimer: 3.4,
+        type: newWeather,
+      };
+      if (this.onWeatherChange) this.onWeatherChange(newWeather);
     }
-    triggerLightning(e = 1) {
-      ((this.lightningFlash = Math.min(1, e)),
-        this.generateLightningBolt(),
-        this.onLightning && this.onLightning(this.lightningFlash));
+    triggerLightning(intensity = 1) {
+      this.lightningFlash = Math.min(1, intensity);
+      this.generateLightningBolt();
+      if (this.onLightning) this.onLightning(this.lightningFlash);
     }
     generateLightningBolt() {
-      let e = 60 + Math.random() * 260,
-        t = [],
-        n = e,
-        r = 0,
-        i = 320 + Math.random() * 180;
-      for (t.push({ x: n, y: r }); r < i;)
-        ((r += 20 + Math.random() * 25),
-          (n += (Math.random() - 0.5) * 35),
-          t.push({ x: n, y: r }));
+      let startX = 60 + Math.random() * 260,
+        segments = [],
+        currX = startX,
+        currY = 0,
+        maxY = 340 + Math.random() * 180;
+      for (segments.push({ x: currX, y: currY }); currY < maxY;) {
+        currY += 20 + Math.random() * 25;
+        currX += (Math.random() - 0.5) * 35;
+        segments.push({ x: currX, y: currY });
+      }
       this.activeLightningBolts.push({
-        startX: e,
+        startX,
         startY: 0,
-        segments: t,
-        life: 0.18,
-        maxLife: 0.18,
-        color: Math.random() > 0.4 ? `#ffffff` : `#f43f5e`,
+        segments,
+        life: 0.24,
+        maxLife: 0.24,
+        color: Math.random() > 0.35 ? `#ffffff` : `#f43f5e`,
       });
     }
-    update(e, t) {
-      if (
-        ((this.time += e),
-        this.transitionProgress < 1 &&
-          ((this.transitionProgress = Math.min(
-            1,
-            this.transitionProgress + e * 0.6,
-          )),
-          this.transitionProgress >= 1 &&
-            (this.currentWeather = this.targetWeather)),
-        (this.weatherCycleTimer += e),
-        this.weatherCycleTimer > this.weatherDuration)
-      ) {
-        if (((this.weatherCycleTimer = 0), this.currentLevel === 1))
-          this.transitionTo(
-            this.targetWeather === `Data Rain` ? `Static Fog` : `Data Rain`,
-          );
-        else if (this.currentLevel === 2)
-          this.transitionTo(
-            this.targetWeather === `Static Fog` ? `Glitch Storm` : `Static Fog`,
-          );
-        else if (this.currentLevel === 3)
-          this.transitionTo(
-            this.targetWeather === `Glitch Storm`
-              ? `Data Rain`
-              : `Glitch Storm`,
-          );
-        else if (this.currentLevel === 4)
-          this.transitionTo(
-            this.targetWeather === `Glitch Storm`
-              ? `Static Fog`
-              : `Glitch Storm`,
-          );
-        else {
-          let e = [`Glitch Storm`, `Data Rain`, `Static Fog`].filter(
-            (e) => e !== this.targetWeather,
-          );
-          this.transitionTo(e[Math.floor(Math.random() * e.length)]);
+    update(dt, speed, distanceMeters, currentZone, boss) {
+      this.time += dt;
+      if (this.weatherAlert) {
+        this.weatherAlert.timer -= dt;
+        if (this.weatherAlert.timer <= 0) this.weatherAlert = null;
+      }
+      if (this.transitionProgress < 1) {
+        this.transitionProgress = Math.min(1, this.transitionProgress + dt * 0.65);
+        if (this.transitionProgress >= 1) {
+          this.currentWeather = this.targetWeather;
         }
       }
-      if (this.getWeightFor(`Data Rain`) > 0.05) {
-        let n = (t / 300) * 0.4 + 0.8;
-        for (let r = 0; r < this.rainDrops.length; r++) {
-          let i = this.rainDrops[r];
-          ((i.y += i.speed * n * e),
-            (i.x -= t * 0.15 * e),
-            i.y > 680 &&
-              ((i.y = -30 - Math.random() * 40),
-              (i.x = Math.random() * 420),
-              Math.random() < 0.25 &&
-                this.spawnSplash(i.x, 560 + Math.random() * 60, i.color)),
-            i.x < -40 && (i.x = 420 + Math.random() * 40));
-        }
-        for (let t = 0; t < this.splashPool.length; t++) {
-          let n = this.splashPool[t];
-          n.alpha > 0 && ((n.radius += e * 32), (n.alpha -= e * 2.2));
-        }
-      }
-      if (this.getWeightFor(`Glitch Storm`) > 0.05) {
-        for (let t = 0; t < this.stormShards.length; t++) {
-          let n = this.stormShards[t];
-          ((n.x += n.vx * e),
-            (n.y += n.vy * e),
-            (n.rotation += n.rotSpeed * e),
-            (n.x > 450 || n.y > 700) &&
-              ((n.x = -60 + Math.random() * 200),
-              (n.y = -40 + Math.random() * 200)));
-        }
-        if (((this.lightningTimer -= e), this.lightningTimer <= 0)) {
-          let e =
-            this.currentLevel === 5
-              ? 1.8 + Math.random() * 2
-              : 3.5 + Math.random() * 4;
-          ((this.lightningTimer = e),
-            this.triggerLightning(0.75 + Math.random() * 0.25));
-        }
-        this.lightningFlash > 0 &&
-          (this.lightningFlash = Math.max(0, this.lightningFlash - e * 4.2));
-        for (let t = this.activeLightningBolts.length - 1; t >= 0; t--) {
-          let n = this.activeLightningBolts[t];
-          ((n.life -= e),
-            n.life <= 0 && this.activeLightningBolts.splice(t, 1));
-        }
-      }
-      if (this.getWeightFor(`Static Fog`) > 0.05)
-        for (let t = 0; t < this.fogBands.length; t++) {
-          let n = this.fogBands[t];
-          n.phase += e * n.speed;
-        }
-    }
-    spawnSplash(e, t, n) {
-      let r = this.splashPool.find((e) => e.alpha <= 0);
-      r &&
-        ((r.x = e),
-        (r.y = t),
-        (r.radius = 2),
-        (r.maxRadius = 10 + Math.random() * 8),
-        (r.alpha = 0.6),
-        (r.color = n));
-    }
-    getWeightFor(e) {
-      if (this.currentWeather === this.targetWeather)
-        return +(this.currentWeather === e);
-      let t = this.targetWeather === e,
-        n = this.currentWeather === e;
-      return t ? this.transitionProgress : n ? 1 - this.transitionProgress : 0;
-    }
-    renderBackground(e, t, n, r) {
-      let i = r === void 0 ? t : n,
-        a = r === void 0 ? n : r;
-      if (this.lightningFlash > 0) {
-        e.save();
-        let t = e.createLinearGradient(0, 0, 0, a * 0.7);
-        (t.addColorStop(0, `rgba(244, 63, 94, ${this.lightningFlash * 0.12})`),
-          t.addColorStop(
-            0.5,
-            `rgba(192, 132, 252, ${this.lightningFlash * 0.08})`,
-          ),
-          t.addColorStop(1, `rgba(0, 0, 0, 0)`),
-          (e.fillStyle = t),
-          e.fillRect(0, 0, i, a),
-          this.activeLightningBolts.forEach((t) => {
-            let n = t.life / t.maxLife;
-            ((e.strokeStyle = t.color),
-              (e.lineWidth = 2.5),
-              (e.shadowColor = t.color),
-              (e.shadowBlur = 12),
-              (e.globalAlpha = n),
-              e.beginPath());
-            for (let n = 0; n < t.segments.length; n++) {
-              let r = t.segments[n];
-              n === 0 ? e.moveTo(r.x, r.y) : e.lineTo(r.x, r.y);
-            }
-            if ((e.stroke(), t.segments.length > 4)) {
-              let n = t.segments[Math.floor(t.segments.length / 2)];
-              (e.beginPath(),
-                e.moveTo(n.x, n.y),
-                e.lineTo(n.x + 28, n.y + 36),
-                e.stroke());
-            }
-          }),
-          e.restore());
-      }
-      let o = this.getWeightFor(`Static Fog`);
-      if (o > 0.02) {
-        (e.save(), (e.globalAlpha = o * 0.45));
-        for (let t = 0; t < this.fogBands.length; t++) {
-          let n = this.fogBands[t];
-          ((e.fillStyle = n.color), e.beginPath(), e.moveTo(0, n.baseY));
-          for (let t = 0; t <= i; t += 30) {
-            let r = Math.sin(t * n.frequency + n.phase) * n.amplitude;
-            e.lineTo(t, n.baseY + r);
+
+      // --- DYNAMIC WEATHER PROGRESSION SYSTEM ---
+      // Evaluates level distance progress, urgency escalation, and boss battle phases
+      if (typeof distanceMeters === `number`) {
+        if (boss && boss.active) {
+          // Boss battle phases: Glitch Storm -> Cryo Lockdown (Code Freeze) -> Overload Meltdown Storm
+          let bossStage = boss.healthProgress > 0.66 ? `Glitch Storm` : boss.healthProgress > 0.33 ? `Code Freeze` : `Glitch Storm`;
+          if (this.lastDynamicStage !== `boss_${bossStage}`) {
+            this.lastDynamicStage = `boss_${bossStage}`;
+            this.transitionTo(bossStage);
           }
-          (e.lineTo(i, n.baseY + n.thickness),
-            e.lineTo(0, n.baseY + n.thickness),
-            e.closePath(),
-            e.fill());
+        } else if (currentZone) {
+          // Normal Run Progression within the zone sector:
+          // 0% - 33%: Data Rain (Stable baseline entry, calm telemetry, lowest hazard)
+          // 33% - 68%: Code Freeze (Escalating strain, sub-zero cooling clamp, rising difficulty)
+          // 68% - 100%: Glitch Storm (Critical difficulty & urgency, red alert, lightning)
+          let span = Math.max(1, (currentZone.distanceEnd || 1000) - (currentZone.distanceStart || 0));
+          let progressInZone = Math.max(0, (distanceMeters - (currentZone.distanceStart || 0)) / span);
+
+          if (progressInZone < 0.33) {
+            if (this.lastDynamicStage !== `stage_early`) {
+              this.lastDynamicStage = `stage_early`;
+              this.transitionTo(`Data Rain`);
+            }
+          } else if (progressInZone < 0.68) {
+            if (this.lastDynamicStage !== `stage_mid`) {
+              this.lastDynamicStage = `stage_mid`;
+              this.transitionTo(`Code Freeze`);
+            }
+          } else if (progressInZone < 1.0) {
+            if (this.lastDynamicStage !== `stage_late`) {
+              this.lastDynamicStage = `stage_late`;
+              this.transitionTo(`Glitch Storm`);
+            }
+          } else {
+            // Running past zone distanceEnd (e.g. Endless run):
+            let overflowMeters = distanceMeters - (currentZone.distanceEnd || 1000);
+            let cycle = Math.floor(overflowMeters / 260) % 2;
+            let cycleStage = cycle === 0 ? `Code Freeze` : `Glitch Storm`;
+            if (this.lastDynamicStage !== `endless_${cycleStage}`) {
+              this.lastDynamicStage = `endless_${cycleStage}`;
+              this.transitionTo(cycleStage);
+            }
+          }
         }
-        e.fillStyle = `rgba(255, 255, 255, 0.025)`;
-        let t = Math.floor(this.time * 60) % 8;
-        for (let n = t; n < a; n += 8) e.fillRect(0, n, i, 1.5);
-        e.restore();
       }
-      let s = this.getWeightFor(`Data Rain`);
-      if (s > 0.02) {
-        (e.save(), (e.globalAlpha = s * 0.4), (e.font = `10px monospace`));
-        for (let t = 0; t < this.rainDrops.length; t += 2) {
-          let n = this.rainDrops[t];
-          ((e.fillStyle = n.color),
-            e.fillText(n.char, n.x, n.y),
-            e.fillRect(n.x + 2, n.y - n.length, 1.2, n.length));
-        }
-        e.restore();
-      }
-    }
-    renderForeground(e, t, n, r) {
-      let i = r === void 0 ? t : n,
-        a = r === void 0 ? n : r,
-        o = this.getWeightFor(`Data Rain`);
-      if (o > 0.02) {
-        (e.save(), (e.globalAlpha = o * 0.65));
-        for (let t = 1; t < this.rainDrops.length; t += 2) {
-          let n = this.rainDrops[t];
-          ((e.fillStyle = n.color),
-            e.fillRect(n.x, n.y - n.length, 1.8, n.length),
-            (e.fillStyle = `#ffffff`),
-            e.fillRect(n.x - 0.5, n.y, 2.5, 3));
+
+      // 1. DATA RAIN
+      if (this.getWeightFor(`Data Rain`) > 0.04) {
+        let spdMult = (speed / 300) * 0.4 + 0.8;
+        for (let r = 0; r < this.rainDrops.length; r++) {
+          let p = this.rainDrops[r];
+          p.y += p.speed * spdMult * dt;
+          p.x -= speed * 0.16 * dt;
+          if (p.y > 690) {
+            p.y = -30 - Math.random() * 40;
+            p.x = Math.random() * 420;
+            if (Math.random() < 0.28) {
+              this.spawnSplash(p.x, 560 + Math.random() * 60, p.color);
+            }
+          }
+          if (p.x < -40) p.x = 420 + Math.random() * 40;
         }
         for (let t = 0; t < this.splashPool.length; t++) {
           let n = this.splashPool[t];
-          n.alpha > 0 &&
-            ((e.strokeStyle = n.color),
-            (e.lineWidth = 1.2),
-            (e.globalAlpha = n.alpha * o),
-            e.beginPath(),
-            e.ellipse(n.x, n.y, n.radius, n.radius * 0.35, 0, 0, Math.PI * 2),
-            e.stroke());
+          if (n.alpha > 0) {
+            n.radius += dt * 32;
+            n.alpha -= dt * 2.2;
+          }
         }
-        e.restore();
       }
-      let s = this.getWeightFor(`Glitch Storm`);
-      if (s > 0.02) {
-        (e.save(), (e.globalAlpha = s * 0.6));
+
+      // 2. GLITCH STORM
+      if (this.getWeightFor(`Glitch Storm`) > 0.04) {
         for (let t = 0; t < this.stormShards.length; t++) {
-          let n = this.stormShards[t];
-          (e.save(),
-            e.translate(n.x, n.y),
-            e.rotate(n.rotation),
-            (e.fillStyle = n.color),
-            e.fillRect(-n.width / 2, -n.height / 2, n.width, n.height),
-            (e.strokeStyle = n.color),
-            (e.lineWidth = 1),
-            e.beginPath(),
-            e.moveTo(0, 0),
-            e.lineTo(-14, -8),
-            e.stroke(),
-            e.restore());
+          let s = this.stormShards[t];
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          s.rotation += s.rotSpeed * dt;
+          if (s.x > 460 || s.y > 720) {
+            s.x = -60 + Math.random() * 200;
+            s.y = -40 + Math.random() * 200;
+          }
         }
-        ((e.strokeStyle = `rgba(244, 63, 94, 0.25)`), (e.lineWidth = 1.5));
-        for (let t = 0; t < 5; t++) {
-          let n = 120 + t * 90 + Math.sin(this.time * 5 + t) * 20,
-            r = ((this.time * 650 + t * 160) % (i + 200)) - 100;
-          (e.beginPath(), e.moveTo(r, n), e.lineTo(r + 90, n + 35), e.stroke());
+        this.lightningTimer -= dt;
+        if (this.lightningTimer <= 0) {
+          let nextTime = this.currentLevel === 10 ? 1.6 + Math.random() * 1.8 : 2.8 + Math.random() * 3.2;
+          this.lightningTimer = nextTime;
+          this.triggerLightning(0.85 + Math.random() * 0.25);
         }
-        e.restore();
+        if (this.lightningFlash > 0) {
+          this.lightningFlash = Math.max(0, this.lightningFlash - dt * 4.4);
+        }
+        for (let t = this.activeLightningBolts.length - 1; t >= 0; t--) {
+          let b = this.activeLightningBolts[t];
+          b.life -= dt;
+          if (b.life <= 0) this.activeLightningBolts.splice(t, 1);
+        }
       }
-      let c = this.getWeightFor(`Static Fog`);
-      if (c > 0.02) {
-        (e.save(), (e.globalAlpha = c * 0.28));
-        let t = e.createLinearGradient(0, a - 160, 0, a);
-        (t.addColorStop(0, `rgba(56, 189, 248, 0)`),
-          t.addColorStop(0.5, `rgba(99, 102, 241, 0.2)`),
-          t.addColorStop(1, `rgba(15, 23, 42, 0.55)`),
-          (e.fillStyle = t),
-          e.fillRect(0, a - 160, i, 160),
-          e.restore());
+
+      // 3. CODE FREEZE
+      if (this.getWeightFor(`Code Freeze`) > 0.04) {
+        for (let t = 0; t < this.frostParticles.length; t++) {
+          let f = this.frostParticles[t];
+          f.x += (f.vx - speed * 0.26) * dt;
+          f.y += (f.vy + Math.sin(this.time * 2.8 + f.phase) * 16) * dt;
+          f.rotation += f.rotSpeed * dt;
+          if (f.x < -50 || f.y > 720) {
+            f.x = 420 + Math.random() * 80;
+            f.y = -30 + Math.random() * 300;
+          }
+        }
+      }
+
+      // 4. STATIC FOG
+      if (this.getWeightFor(`Static Fog`) > 0.04) {
+        for (let t = 0; t < this.fogBands.length; t++) {
+          let b = this.fogBands[t];
+          b.phase += dt * b.speed;
+        }
+      }
+    }
+    spawnSplash(x, y, color) {
+      let r = this.splashPool.find((e) => e.alpha <= 0);
+      if (r) {
+        r.x = x;
+        r.y = y;
+        r.radius = 2;
+        r.maxRadius = 10 + Math.random() * 8;
+        r.alpha = 0.65;
+        r.color = color;
+      }
+    }
+    getWeightFor(weatherName) {
+      if (this.currentWeather === this.targetWeather) return +(this.currentWeather === weatherName);
+      let isTarget = this.targetWeather === weatherName;
+      let isCurr = this.currentWeather === weatherName;
+      return isTarget ? this.transitionProgress : isCurr ? 1 - this.transitionProgress : 0;
+    }
+    renderBackground(ctx, width, height) {
+      let w = width, h = height;
+
+      // GLITCH STORM LIGHTNING
+      if (this.lightningFlash > 0) {
+        ctx.save();
+        let grad = ctx.createLinearGradient(0, 0, 0, h * 0.75);
+        grad.addColorStop(0, `rgba(244, 63, 94, ${this.lightningFlash * 0.16})`);
+        grad.addColorStop(0.5, `rgba(192, 132, 252, ${this.lightningFlash * 0.10})`);
+        grad.addColorStop(1, `rgba(0, 0, 0, 0)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        this.activeLightningBolts.forEach((bolt) => {
+          let alphaRatio = bolt.life / bolt.maxLife;
+          ctx.strokeStyle = bolt.color;
+          ctx.lineWidth = 2.8;
+          ctx.shadowColor = bolt.color;
+          ctx.shadowBlur = 14;
+          ctx.globalAlpha = alphaRatio;
+          ctx.beginPath();
+          for (let i = 0; i < bolt.segments.length; i++) {
+            let seg = bolt.segments[i];
+            i === 0 ? ctx.moveTo(seg.x, seg.y) : ctx.lineTo(seg.x, seg.y);
+          }
+          ctx.stroke();
+          if (bolt.segments.length > 4) {
+            let mid = bolt.segments[Math.floor(bolt.segments.length / 2)];
+            ctx.beginPath();
+            ctx.moveTo(mid.x, mid.y);
+            ctx.lineTo(mid.x + 32, mid.y + 40);
+            ctx.stroke();
+          }
+        });
+        ctx.restore();
+      }
+
+      // CODE FREEZE BACKGROUND MIST & CRYOGENIC GLOW
+      let freezeW = this.getWeightFor(`Code Freeze`);
+      if (freezeW > 0.02) {
+        ctx.save();
+        ctx.globalAlpha = freezeW * 0.35;
+        let frostGrad = ctx.createLinearGradient(0, 0, 0, h);
+        frostGrad.addColorStop(0, `rgba(56, 189, 248, 0.18)`);
+        frostGrad.addColorStop(0.4, `rgba(14, 165, 233, 0.06)`);
+        frostGrad.addColorStop(0.8, `rgba(186, 230, 253, 0.12)`);
+        ctx.fillStyle = frostGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Soft background frost crystals
+        ctx.font = `9px monospace`;
+        for (let i = 0; i < this.frostParticles.length; i += 2) {
+          let f = this.frostParticles[i];
+          ctx.fillStyle = f.color;
+          ctx.globalAlpha = freezeW * (f.alpha * 0.4);
+          ctx.fillText(f.char, f.x, f.y);
+        }
+        ctx.restore();
+      }
+
+      // STATIC FOG
+      let fogW = this.getWeightFor(`Static Fog`);
+      if (fogW > 0.02) {
+        ctx.save();
+        ctx.globalAlpha = fogW * 0.45;
+        for (let t = 0; t < this.fogBands.length; t++) {
+          let band = this.fogBands[t];
+          ctx.fillStyle = band.color;
+          ctx.beginPath();
+          ctx.moveTo(0, band.baseY);
+          for (let x = 0; x <= w; x += 30) {
+            let dy = Math.sin(x * band.frequency + band.phase) * band.amplitude;
+            ctx.lineTo(x, band.baseY + dy);
+          }
+          ctx.lineTo(w, band.baseY + band.thickness);
+          ctx.lineTo(0, band.baseY + band.thickness);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.fillStyle = `rgba(255, 255, 255, 0.025)`;
+        let scanShift = Math.floor(this.time * 60) % 8;
+        for (let y = scanShift; y < h; y += 8) ctx.fillRect(0, y, w, 1.5);
+        ctx.restore();
+      }
+
+      // DATA RAIN BACKGROUND
+      let rainW = this.getWeightFor(`Data Rain`);
+      if (rainW > 0.02) {
+        ctx.save();
+        ctx.globalAlpha = rainW * 0.42;
+        ctx.font = `10px monospace`;
+        for (let t = 0; t < this.rainDrops.length; t += 2) {
+          let drop = this.rainDrops[t];
+          ctx.fillStyle = drop.color;
+          ctx.fillText(drop.char, drop.x, drop.y);
+          ctx.fillRect(drop.x + 2, drop.y - drop.length, 1.2, drop.length);
+        }
+        ctx.restore();
+      }
+    }
+    renderForeground(ctx, width, height) {
+      let w = width, h = height;
+
+      // 1. DATA RAIN FOREGROUND
+      let rainW = this.getWeightFor(`Data Rain`);
+      if (rainW > 0.02) {
+        ctx.save();
+        ctx.globalAlpha = rainW * 0.72;
+        for (let t = 1; t < this.rainDrops.length; t += 2) {
+          let drop = this.rainDrops[t];
+          ctx.fillStyle = drop.color;
+          ctx.fillRect(drop.x, drop.y - drop.length, 2, drop.length);
+          ctx.fillStyle = `#ffffff`;
+          ctx.fillRect(drop.x - 0.5, drop.y, 3, 3.5);
+        }
+        for (let t = 0; t < this.splashPool.length; t++) {
+          let splash = this.splashPool[t];
+          if (splash.alpha > 0) {
+            ctx.strokeStyle = splash.color;
+            ctx.lineWidth = 1.4;
+            ctx.globalAlpha = splash.alpha * rainW;
+            ctx.beginPath();
+            ctx.ellipse(splash.x, splash.y, splash.radius, splash.radius * 0.35, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      // 2. CODE FREEZE FOREGROUND (FROST VIGNETTE, CORNER CRYO BRACKETS & GLISTENING CRYSTALS)
+      let freezeW = this.getWeightFor(`Code Freeze`);
+      if (freezeW > 0.02) {
+        ctx.save();
+        // Creeping frost vignette along screen borders
+        ctx.globalAlpha = freezeW * 0.72;
+        let topFrost = ctx.createLinearGradient(0, 0, 0, 65);
+        topFrost.addColorStop(0, `rgba(186, 230, 253, 0.52)`);
+        topFrost.addColorStop(0.4, `rgba(56, 189, 248, 0.22)`);
+        topFrost.addColorStop(1, `transparent`);
+        ctx.fillStyle = topFrost;
+        ctx.fillRect(0, 0, w, 65);
+
+        let btmFrost = ctx.createLinearGradient(0, h, 0, h - 80);
+        btmFrost.addColorStop(0, `rgba(186, 230, 253, 0.48)`);
+        btmFrost.addColorStop(0.5, `rgba(56, 189, 248, 0.20)`);
+        btmFrost.addColorStop(1, `transparent`);
+        ctx.fillStyle = btmFrost;
+        ctx.fillRect(0, h - 80, w, 80);
+
+        // Jagged frost teeth creeping along top edge
+        ctx.fillStyle = `rgba(224, 242, 254, ${0.45 * freezeW})`;
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 16) {
+          let spikeH = 10 + Math.sin(x * 0.14 + this.time * 2) * 6 + (x % 32 === 0 ? 8 : 0);
+          ctx.lineTo(x, spikeH);
+          ctx.lineTo(x + 8, 0);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Side cryo borders with frosty glow
+        ctx.strokeStyle = `rgba(56, 189, 248, ${0.55 * freezeW})`;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(4, 4, w - 8, h - 8);
+
+        // Corner cryo tech brackets [ ❄ ]
+        ctx.strokeStyle = `#7dd3fc`;
+        ctx.lineWidth = 2.4;
+        let bLen = 24;
+        // Top Left
+        ctx.beginPath(); ctx.moveTo(8, 8 + bLen); ctx.lineTo(8, 8); ctx.lineTo(8 + bLen, 8); ctx.stroke();
+        // Top Right
+        ctx.beginPath(); ctx.moveTo(w - 8 - bLen, 8); ctx.lineTo(w - 8, 8); ctx.lineTo(w - 8, 8 + bLen); ctx.stroke();
+        // Bottom Left
+        ctx.beginPath(); ctx.moveTo(8, h - 8 - bLen); ctx.lineTo(8, h - 8); ctx.lineTo(8 + bLen, h - 8); ctx.stroke();
+        // Bottom Right
+        ctx.beginPath(); ctx.moveTo(w - 8 - bLen, h - 8); ctx.lineTo(w - 8, h - 8); ctx.lineTo(w - 8, h - 8 - bLen); ctx.stroke();
+
+        // Tactical sub-zero status HUD readout in top-right
+        ctx.fillStyle = `rgba(186, 230, 253, ${0.85 * freezeW})`;
+        ctx.font = `800 8px monospace`;
+        ctx.textAlign = `right`;
+        ctx.fillText(`SUB-ZERO CLAMP // -273°C ❄`, w - 16, 22);
+
+        // Foreground ice snowflakes & hex byte crystals
+        for (let i = 1; i < this.frostParticles.length; i += 2) {
+          let f = this.frostParticles[i];
+          ctx.save();
+          ctx.translate(f.x, f.y);
+          ctx.rotate(f.rotation);
+          ctx.globalAlpha = freezeW * f.alpha;
+          ctx.fillStyle = f.color;
+          ctx.shadowColor = `#38bdf8`;
+          ctx.shadowBlur = 10;
+          ctx.font = `bold ${f.size}px sans-serif`;
+          ctx.textAlign = `center`;
+          ctx.textBaseline = `middle`;
+          ctx.fillText(f.char, 0, 0);
+
+          // Diamond sparkle center
+          ctx.fillStyle = `#ffffff`;
+          ctx.fillRect(-1.2, -1.2, 2.4, 2.4);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      // 3. GLITCH STORM FOREGROUND (CRIMSON HAZARD SCANLINES & ENERGY SHARDS)
+      let stormW = this.getWeightFor(`Glitch Storm`);
+      if (stormW > 0.02) {
+        ctx.save();
+        ctx.globalAlpha = stormW * 0.78;
+
+        // Pulsing hazard perimeter alert border
+        let pulse = (Math.sin(this.time * 7) + 1) * 0.5;
+        ctx.strokeStyle = `rgba(244, 63, 94, ${0.55 * pulse + 0.25})`;
+        ctx.lineWidth = 2.8;
+        ctx.shadowColor = `#f43f5e`;
+        ctx.shadowBlur = 12;
+        ctx.strokeRect(3, 3, w - 6, h - 6);
+
+        // Corner hazard markers [ ! ]
+        let hLen = 20;
+        ctx.strokeStyle = `#f43f5e`;
+        ctx.lineWidth = 2.5;
+        // Top Left
+        ctx.beginPath(); ctx.moveTo(6, 6 + hLen); ctx.lineTo(6, 6); ctx.lineTo(6 + hLen, 6); ctx.stroke();
+        // Top Right
+        ctx.beginPath(); ctx.moveTo(w - 6 - hLen, 6); ctx.lineTo(w - 6, 6); ctx.lineTo(w - 6, 6 + hLen); ctx.stroke();
+        // Bottom Left
+        ctx.beginPath(); ctx.moveTo(6, h - 6 - hLen); ctx.lineTo(6, h - 6); ctx.lineTo(6 + hLen, h - 6); ctx.stroke();
+        // Bottom Right
+        ctx.beginPath(); ctx.moveTo(w - 6 - hLen, h - 6); ctx.lineTo(w - 6, h - 6); ctx.lineTo(w - 6, h - 6 - hLen); ctx.stroke();
+
+        // Tactical warning tag in top-right
+        ctx.fillStyle = `rgba(254, 205, 211, ${0.85 * stormW})`;
+        ctx.font = `800 8px monospace`;
+        ctx.textAlign = `right`;
+        ctx.fillText(`MAINFRAME INSTABILITY // VOLTAGE SURGE ⚡`, w - 16, 22);
+
+        // Corrupted high-velocity shards
+        for (let t = 0; t < this.stormShards.length; t++) {
+          let s = this.stormShards[t];
+          ctx.save();
+          ctx.translate(s.x, s.y);
+          ctx.rotate(s.rotation);
+          ctx.fillStyle = s.color;
+          ctx.fillRect(-s.width / 2, -s.height / 2, s.width, s.height);
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(-22, -12);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Chromatic screen tearing strips
+        ctx.strokeStyle = `rgba(244, 63, 94, 0.42)`;
+        ctx.lineWidth = 2;
+        for (let t = 0; t < 5; t++) {
+          let lineY = 110 + t * 105 + Math.sin(this.time * 6 + t) * 25;
+          let lineX = ((this.time * 750 + t * 180) % (w + 240)) - 120;
+          ctx.beginPath();
+          ctx.moveTo(lineX, lineY);
+          ctx.lineTo(lineX + 120, lineY + 45);
+          ctx.stroke();
+        }
+        if (this.lightningFlash > 0.4) {
+          // Horizontal chromatic glitch tear
+          ctx.fillStyle = `rgba(244, 63, 94, 0.32)`;
+          let glitchY = (Math.floor(this.time * 240) % 500) + 100;
+          ctx.fillRect(0, glitchY, w, 8);
+          ctx.fillStyle = `rgba(255, 255, 255, 0.22)`;
+          ctx.fillRect(0, glitchY + 3, w, 3);
+        }
+        ctx.restore();
+      }
+
+      // 4. STATIC FOG FOREGROUND
+      let fogW = this.getWeightFor(`Static Fog`);
+      if (fogW > 0.02) {
+        ctx.save();
+        ctx.globalAlpha = fogW * 0.32;
+        let fogGrad = ctx.createLinearGradient(0, h - 160, 0, h);
+        fogGrad.addColorStop(0, `rgba(56, 189, 248, 0)`);
+        fogGrad.addColorStop(0.5, `rgba(99, 102, 241, 0.22)`);
+        fogGrad.addColorStop(1, `rgba(15, 23, 42, 0.6)`);
+        ctx.fillStyle = fogGrad;
+        ctx.fillRect(0, h - 160, w, 160);
+        ctx.restore();
+      }
+
+      // 5. FLOATING WEATHER ALERT BANNER OVERLAY
+      if (this.weatherAlert && this.weatherAlert.timer > 0) {
+        let alertAlpha = Math.min(1, this.weatherAlert.timer * 2.5);
+        if (this.weatherAlert.timer < 0.5) {
+          alertAlpha = this.weatherAlert.timer / 0.5;
+        }
+        ctx.save();
+        ctx.globalAlpha = alertAlpha;
+        let cardY = 120;
+        let cardH = 54;
+        let cardW = w - 36;
+        let cardX = 18;
+
+        // Alert Card Backdrop
+        ctx.fillStyle = `rgba(4, 9, 22, 0.94)`;
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardW, cardH, 12);
+        ctx.fill();
+
+        // Glowing border
+        ctx.strokeStyle = this.weatherAlert.color;
+        ctx.lineWidth = 2.0;
+        ctx.shadowColor = this.weatherAlert.color;
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+
+        // Pulsing status beacon on left
+        let beaconPulse = (Math.sin(this.time * 8) + 1) * 0.5;
+        ctx.fillStyle = this.weatherAlert.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(cardX + 22, cardY + cardH / 2, 5 + beaconPulse * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `#ffffff`;
+        ctx.beginPath();
+        ctx.arc(cardX + 22, cardY + cardH / 2, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Alert Headline Title
+        ctx.textAlign = `left`;
+        ctx.fillStyle = this.weatherAlert.color;
+        ctx.font = `900 13px sans-serif`;
+        ctx.fillText(this.weatherAlert.title, cardX + 38, cardY + 23);
+
+        // Alert Subtitle
+        ctx.fillStyle = `#e2e8f0`;
+        ctx.font = `700 8.5px monospace`;
+        ctx.fillText(this.weatherAlert.subtitle, cardX + 38, cardY + 39);
+
+        // Urgency countdown progress line at the bottom
+        let maxT = this.weatherAlert.maxTimer || 3.4;
+        let remainRatio = Math.max(0, Math.min(1, this.weatherAlert.timer / maxT));
+        ctx.fillStyle = `rgba(255, 255, 255, 0.15)`;
+        ctx.fillRect(cardX + 14, cardY + cardH - 5, cardW - 28, 2);
+        ctx.fillStyle = this.weatherAlert.color;
+        ctx.shadowBlur = 4;
+        ctx.fillRect(cardX + 14, cardY + cardH - 5, (cardW - 28) * remainRatio, 2);
+
+        ctx.restore();
       }
     }
   },
@@ -738,6 +1054,7 @@ var $e = class {
       onMetricsUpdate: o,
       onPause: s,
     }) => {
+      let heroConfig = Qe(r);
       let c = (0, _.useRef)(null),
         l = (0, _.useRef)(null),
         u = (0, _.useRef)({ width: L, height: it, dpr: 1 }),
@@ -940,16 +1257,21 @@ var $e = class {
               }),
               (ce.current = t));
           } catch {}
-          ((fe.current.onLightning = () => {
+          ((fe.current.onLightning = (intensity = 1) => {
             b.playThunder();
+            ve(intensity ? Math.round(intensity * 7) : 6);
           }),
             (fe.current.onWeatherChange = (e) => {
-              (b.playWeatherShift(),
+              (b.playWeatherShift(e),
                 _e(
-                  `WEATHER: ${e.toUpperCase()} ⚡`,
+                  e === `Code Freeze`
+                    ? `❄️ CODE FREEZE: SUB-ZERO LOCKDOWN`
+                    : e === `Glitch Storm`
+                      ? `⚡ GLITCH STORM: CRITICAL URGENCY`
+                      : `🌧️ DATA RAIN: STABLE TELEMETRY`,
                   L / 2,
                   190,
-                  `#38bdf8`,
+                  e === `Code Freeze` ? `#38bdf8` : e === `Glitch Storm` ? `#f43f5e` : `#22d3ee`,
                   15,
                 ));
             }));
@@ -1409,7 +1731,8 @@ var $e = class {
       }, [e, n, ye]);
       let be = (isDouble = !1) => {
           let e = O.current;
-          ((e.vy = isDouble ? ot * 0.94 : ot),
+          let baseJump = ot * (heroConfig.perk?.jumpMult || 1.0);
+          ((e.vy = isDouble ? baseJump * 0.94 : baseJump),
             (e.squashStretch = isDouble ? 1.35 : 1.25),
             (x.current = !1),
             (v.current = !0),
@@ -1503,17 +1826,21 @@ var $e = class {
           let n = O.current;
           if (e.type === `coin`) {
             n.coinsCollected++;
-            let r = 100 * n.combo;
+            let scoreBonusMult = heroConfig.perk?.scoreMult || 1.0;
+            let r = Math.round(100 * n.combo * scoreBonusMult);
             ((n.score += r),
               (n.comboTimer = 2.4),
               (n.combo = Math.min(5, n.combo + 1)),
-              b.playCoin(),
+              b.playCoin(n.combo),
               _e(`+${r}`, t, e.y, `#facc15`, 14),
               M(t + e.width / 2, e.y + e.height / 2, 6, `coin`, `#facc15`));
+            if (n.combo >= 3) {
+              b.playCombo(n.combo);
+            }
           } else
             e.type === `energy`
               ? ((n.energy = Math.min(n.maxEnergy, n.energy + 1)),
-                b.playPowerup(),
+                (b.playEnergyCore ? b.playEnergyCore() : b.playPowerup()),
                 _e(`+1 ENERGY ⚡`, t, e.y, `#22c55e`, 16),
                 M(t + e.width / 2, e.y + e.height / 2, 12, `spark`, `#22c55e`))
               : e.type === `shield`
@@ -1522,8 +1849,9 @@ var $e = class {
                   _e(`GLITCH SHIELD 🛡️`, t, e.y, `#38bdf8`, 16),
                   M(t + e.width / 2, e.y + e.height / 2, 14, `ring`, `#38bdf8`))
                 : e.type === `speed`
-                  ? ((n.speedBoostTimer = 4.5),
+                  ? ((n.speedBoostTimer = 4.5 * (heroConfig.perk?.speedMult || 1.0)),
                     b.playPowerup(),
+                    b.playSonicBoom(),
                     _e(`HYPER BOOST 🚀`, t, e.y, `#f43f5e`, 16),
                     M(
                       t + e.width / 2,
@@ -1557,14 +1885,22 @@ var $e = class {
           a(e.score, e.distanceMeters, e.coinsCollected);
         };
       (0, _.useEffect)(() => {
+        if (e && !t) {
+          c.current?.focus();
+        }
         let n = (n) => {
             if (e && !t) {
+              if (n.code === `Tab`) {
+                n.preventDefault();
+                return;
+              }
               if (
                 n.code === `Space` ||
                 n.code === `KeyW` ||
                 n.code === `ArrowUp` ||
                 n.code === `Enter`
               ) {
+                n.preventDefault();
                 if (f.current) {
                   ((f.current = !1),
                     b.playButton(),
@@ -1574,25 +1910,44 @@ var $e = class {
                 }
                 n.repeat || ((p.current = !0), xe());
               }
-              ((n.code === `KeyP` || n.code === `Escape`) && s?.(),
-                (n.code === `KeyA` || n.code === `ArrowLeft`) &&
-                  (E.current = -1),
-                (n.code === `KeyD` || n.code === `ArrowRight`) &&
-                  (E.current = 1));
+              if (n.code === `KeyP` || n.code === `Escape`) {
+                n.preventDefault();
+                s?.();
+              }
+              if (n.code === `KeyA` || n.code === `ArrowLeft`) {
+                n.preventDefault();
+                E.current = -1;
+              }
+              if (n.code === `KeyD` || n.code === `ArrowRight`) {
+                n.preventDefault();
+                E.current = 1;
+              }
+              if (n.code === `ArrowDown` || n.code === `KeyS`) {
+                n.preventDefault();
+              }
             }
           },
           r = (e) => {
-            ((e.code === `Space` ||
+            if (
+              e.code === `Space` ||
               e.code === `KeyW` ||
               e.code === `ArrowUp` ||
-              e.code === `Enter`) &&
-              ((p.current = !1), (g.current = 0)),
-              (e.code === `KeyA` || e.code === `ArrowLeft`) &&
-                E.current === -1 &&
-                (E.current = 0),
-              (e.code === `KeyD` || e.code === `ArrowRight`) &&
-                E.current === 1 &&
-                (E.current = 0));
+              e.code === `Enter`
+            ) {
+              e.preventDefault();
+              ((p.current = !1), (g.current = 0));
+            }
+            if (e.code === `KeyA` || e.code === `ArrowLeft`) {
+              e.preventDefault();
+              if (E.current === -1) E.current = 0;
+            }
+            if (e.code === `KeyD` || e.code === `ArrowRight`) {
+              e.preventDefault();
+              if (E.current === 1) E.current = 0;
+            }
+            if (e.code === `ArrowDown` || e.code === `KeyS`) {
+              e.preventDefault();
+            }
           };
         return (
           window.addEventListener(`keydown`, n),
@@ -1652,7 +2007,7 @@ var $e = class {
               (x.current = !0),
               (v.current = !1),
               (h.current = lt),
-              fe.current.update(e, 0),
+              fe.current.update(e, 0, t.distanceMeters, ee.current, n),
               d.current.forEach((t) => {
                 ((t.radius += e * 70), (t.alpha -= e * 2.2));
               }),
@@ -1669,7 +2024,7 @@ var $e = class {
                   levelNumber: k.current,
                   levelName: ee.current.name,
                   zone: ee.current.id,
-                  weather: fe.current.currentWeather,
+                  weather: fe.current.targetWeather || fe.current.currentWeather,
                   bossActive: n.active,
                   bossHealth: n.healthProgress,
                   bossPhase: n.phase,
@@ -1718,7 +2073,7 @@ var $e = class {
           (ne.current &&
             ((ne.current.timer -= e),
             ne.current.timer <= 0 && (ne.current = null)),
-            fe.current.update(e, i),
+            fe.current.update(e, i, t.distanceMeters, ee.current, n),
             E.current !== 0 &&
               ((t.targetX += E.current * 240 * e),
               (t.targetX = Math.max(40, Math.min(260, t.targetX)))),
@@ -1824,7 +2179,8 @@ var $e = class {
               }
             }),
             oe
-              ? ((x.current = !0),
+              ? ((!x.current && b.playLand()),
+                (x.current = !0),
                 (m.current = ct),
                 (v.current = !1),
                 (jumpCount.current = 0),
@@ -1843,12 +2199,14 @@ var $e = class {
             ie.current.forEach((n) => {
               if (n.collected) return;
               let r = n.x - t.worldX;
-              if (t.magnetTimer > 0 && n.type === `coin`) {
+              let hasPassiveMagnet = Boolean(heroConfig.perk?.magnetMult && heroConfig.perk.magnetMult > 1.2);
+              if ((t.magnetTimer > 0 || hasPassiveMagnet) && n.type === `coin`) {
                 let i = t.x + t.width / 2 - (r + n.width / 2),
                   a = t.y + t.height / 2 - (n.y + n.height / 2),
                   o = Math.hypot(i, a);
-                o < 180 &&
-                  ((n.x += (i / o) * 360 * e), (n.y += (a / o) * 360 * e));
+                let maxPullDist = t.magnetTimer > 0 ? 180 * (heroConfig.perk?.magnetMult || 1.0) : 110;
+                o < maxPullDist &&
+                  ((n.x += (i / o) * 380 * e), (n.y += (a / o) * 380 * e));
               }
               t.x < r + n.width &&
                 t.x + t.width > r &&
@@ -2090,7 +2448,7 @@ var $e = class {
                 levelNumber: k.current,
                 levelName: ee.current.name,
                 zone: ee.current.id,
-                weather: fe.current.currentWeather,
+                weather: fe.current.targetWeather || fe.current.currentWeather,
                 bossActive: n.active,
                 bossHealth: n.healthProgress,
                 bossPhase: n.phase,
@@ -3012,16 +3370,16 @@ var $e = class {
             b = a + 15,
             x = 15.5,
             S = e.createRadialGradient(y - 4, b - 4, 2, y, b, x);
-          (S.addColorStop(0, `rgba(224, 242, 254, 0.95)`),
-            S.addColorStop(0.25, `rgba(56, 189, 248, 0.45)`),
-            S.addColorStop(0.65, `rgba(2, 132, 199, 0.35)`),
-            S.addColorStop(0.92, `rgba(56, 189, 248, 0.9)`),
-            S.addColorStop(1, `rgba(125, 211, 252, 0.95)`),
+          (S.addColorStop(0, n.glassStop0 || `rgba(224, 242, 254, 0.95)`),
+            S.addColorStop(0.25, n.glassStop25 || `rgba(56, 189, 248, 0.45)`),
+            S.addColorStop(0.65, n.glassStop60 || `rgba(2, 132, 199, 0.35)`),
+            S.addColorStop(0.92, n.glassStop90 || `rgba(56, 189, 248, 0.9)`),
+            S.addColorStop(1, n.glassStop100 || `rgba(125, 211, 252, 0.95)`),
             (e.fillStyle = S),
             e.beginPath(),
             e.arc(y, b, x, 0, Math.PI * 2),
             e.fill(),
-            (e.strokeStyle = `#38bdf8`),
+            (e.strokeStyle = n.glassStroke || `#38bdf8`),
             (e.lineWidth = 1.8),
             e.stroke(),
             (e.strokeStyle = `rgba(224, 242, 254, 0.45)`),
@@ -3032,7 +3390,7 @@ var $e = class {
           let C = y - 21 / 2,
             T = b - 13 / 2;
           if (
-            ((e.fillStyle = `#2563eb`),
+            ((e.fillStyle = n.visorBgStart || `#2563eb`),
             e.beginPath(),
             e.roundRect(C, T, 21, 13, 5.5),
             e.fill(),
@@ -3042,7 +3400,7 @@ var $e = class {
             e.lineTo(y + 6.5, b + 6.2),
             e.closePath(),
             e.fill(),
-            (e.strokeStyle = `#60a5fa`),
+            (e.strokeStyle = n.visorStroke || `#60a5fa`),
             (e.lineWidth = 1.2),
             e.beginPath(),
             e.roundRect(C, T, 21, 13, 5.5),
@@ -3054,32 +3412,32 @@ var $e = class {
               (e.textAlign = `center`),
               e.fillText(`><`, y, b + 3));
           else {
-            let t = (t, n, r) => {
-              (e.save(), e.translate(t, n), e.rotate(r), e.translate(0, -1.8));
-              let i = 2.8;
-              ((e.fillStyle = `#ffffff`),
+            let t = (t, r, i) => {
+              (e.save(), e.translate(t, r), e.rotate(i), e.translate(0, -1.8));
+              let a = 2.8;
+              ((e.fillStyle = n.eyeColor || `#ffffff`),
                 e.beginPath(),
                 e.moveTo(0, -2.2),
-                e.lineTo(3.9, 1.6999999999999997),
-                e.lineTo(i, i),
+                e.lineTo(3.9, 1.7),
+                e.lineTo(a, a),
                 e.lineTo(0, 0),
-                e.lineTo(-2.8, i),
-                e.lineTo(-3.9, 1.6999999999999997),
+                e.lineTo(-2.8, a),
+                e.lineTo(-3.9, 1.7),
                 e.closePath(),
                 e.fill(),
-                (e.fillStyle = `#0f172a`),
+                (e.fillStyle = n.visorBgEnd || `#0f172a`),
                 e.beginPath(),
                 e.moveTo(0, 0),
-                e.lineTo(i, i),
-                e.lineTo(0, i * 2),
-                e.lineTo(-2.8, i),
+                e.lineTo(a, a),
+                e.lineTo(0, a * 2),
+                e.lineTo(-2.8, a),
                 e.closePath(),
                 e.fill(),
                 e.restore());
             };
             (t(y - 5.5, b, -Math.PI / 2),
               t(y + 5.5, b - 0.5, -0.48),
-              (e.strokeStyle = `#0f172a`),
+              (e.strokeStyle = n.smileColor || `#0f172a`),
               (e.lineWidth = 1.8),
               (e.lineCap = `round`),
               e.beginPath(),
@@ -3190,8 +3548,10 @@ var $e = class {
         };
       return (0, I.jsx)(`div`, {
         ref: c,
-        className: `relative w-full h-full select-none overflow-hidden touch-none cursor-pointer`,
+        tabIndex: 0,
+        className: `relative w-full h-full select-none overflow-hidden touch-none cursor-pointer outline-none focus:outline-none`,
         onPointerDown: (e) => {
+          c.current?.focus();
           Te(e.clientX, e.clientY);
         },
         onPointerMove: (e) => {
@@ -3202,7 +3562,7 @@ var $e = class {
         onPointerLeave: De,
         children: (0, I.jsx)(`canvas`, {
           ref: l,
-          className: `w-full h-full block object-contain`,
+          className: `w-full h-full block object-contain outline-none`,
         }),
       });
     },

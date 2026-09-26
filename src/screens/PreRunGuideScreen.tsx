@@ -116,6 +116,7 @@ export const PreRunGuideScreen = ({
   skinId: t,
   onStart: n,
   onCancel: r,
+  onChangeHero: c,
 }) => {
   let [i] = (0, _.useState)(!1),
     a = y[e - 1] || y[0],
@@ -156,13 +157,13 @@ export const PreRunGuideScreen = ({
           ],
         }),
         (0, I.jsxs)(`div`, {
-          className: `flex items-center gap-3 w-full p-2.5 rounded-2xl bg-slate-950/80 border border-cyan-500/30 mb-3 text-left`,
+          className: `flex items-center gap-3 w-full p-2.5 rounded-2xl bg-slate-950/80 border border-cyan-500/30 mb-2 text-left`,
           children: [
             (0, I.jsxs)(`div`, {
               className: `shrink-0 relative`,
               children: [
                 (0, I.jsx)(mt, {
-                  size: 48,
+                  size: 44,
                   animated: !1,
                   expression: `happy`,
                   skinId: t,
@@ -174,7 +175,7 @@ export const PreRunGuideScreen = ({
               ],
             }),
             (0, I.jsxs)(`div`, {
-              className: `flex flex-col overflow-hidden`,
+              className: `flex flex-col overflow-hidden flex-1`,
               children: [
                 (0, I.jsx)(`span`, {
                   className: `text-sm font-black text-white truncate font-sans`,
@@ -196,6 +197,55 @@ export const PreRunGuideScreen = ({
                 }),
               ],
             }),
+          ],
+        }),
+        (0, I.jsxs)(`div`, {
+          className: `w-full p-2 rounded-xl bg-slate-950/90 border border-fuchsia-500/30 flex items-center justify-between gap-2 mb-3 text-left`,
+          children: [
+            (0, I.jsxs)(`div`, {
+              className: `flex items-center gap-2 overflow-hidden`,
+              children: [
+                (0, I.jsx)(`div`, {
+                  className: `w-7 h-7 rounded-lg border flex items-center justify-center shrink-0`,
+                  style: {
+                    borderColor: o.palette.suitStroke,
+                    background: `linear-gradient(135deg, ${o.palette.suitGradStart} 0%, ${o.palette.capeGradMid} 100%)`,
+                  },
+                  children: (0, I.jsx)(`div`, {
+                    className: `w-2.5 h-2.5 rounded-full border border-white/70`,
+                    style: { backgroundColor: o.palette.eyeColor },
+                  }),
+                }),
+                (0, I.jsxs)(`div`, {
+                  className: `flex flex-col overflow-hidden`,
+                  children: [
+                    (0, I.jsxs)(`div`, {
+                      className: `flex items-center gap-1.5`,
+                      children: [
+                        (0, I.jsx)(`span`, {
+                          className: `text-[11px] font-black text-white truncate`,
+                          children: o.name,
+                        }),
+                        (0, I.jsx)(`span`, {
+                          className: `text-[8px] font-mono font-bold uppercase text-fuchsia-300`,
+                          children: `• ${o.characterClass || o.rarity}`,
+                        }),
+                      ],
+                    }),
+                    (0, I.jsx)(`span`, {
+                      className: `text-[9px] font-mono text-amber-300 truncate`,
+                      children: o.perk?.statBonus || `Balanced Agility`,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            c &&
+              (0, I.jsx)(`button`, {
+                onClick: c,
+                className: `px-2 py-1 rounded-lg bg-fuchsia-500/20 hover:bg-fuchsia-500/30 border border-fuchsia-400/40 text-fuchsia-300 font-mono text-[9px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all`,
+                children: `CHANGE HERO ⚡`,
+              }),
           ],
         }),
         (0, I.jsxs)(`div`, {

@@ -136,6 +136,7 @@ export default function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        e.preventDefault();
         if (gameState === 'PLAYING') {
           handlePause();
         } else if (gameState === 'PAUSED') {
@@ -193,12 +194,14 @@ export default function App() {
 
   return (
     <div className="relative w-full h-full min-h-screen overflow-hidden bg-[#05070f] flex items-center justify-center select-none font-sans touch-none">
-      {/* Persistent Desktop Header */}
-      <DesktopHeader
-        onOpenHowToPlay={() => setGameState('HOW_TO_PLAY')}
-        onOpenCreator={() => setGameState('CREATOR')}
-        onOpenLeaderboard={() => setGameState('LEADERBOARD')}
-      />
+      {/* Top Header - visible on MENU screen, never during active runs */}
+      {gameState === 'MENU' && (
+        <DesktopHeader
+          onOpenHowToPlay={() => setGameState('HOW_TO_PLAY')}
+          onOpenCreator={() => setGameState('CREATOR')}
+          onOpenLeaderboard={() => setGameState('LEADERBOARD')}
+        />
+      )}
 
       {/* Background Radial Glow */}
       <div className="absolute inset-0 bg-radial from-cyan-900/15 via-purple-950/15 to-transparent pointer-events-none" />
@@ -399,6 +402,7 @@ export default function App() {
               skinId={stats.selectedSkin || 'classic'}
               onStart={handleStartFromGuide}
               onCancel={() => setGameState('MENU')}
+              onChangeHero={() => setGameState('CLOSET')}
             />
           )}
         </div>

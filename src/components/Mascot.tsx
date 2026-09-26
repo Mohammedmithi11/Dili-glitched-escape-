@@ -33,7 +33,7 @@ export const Mascot: React.FC<MascotProps> = ({
       />
       <svg
         viewBox="0 0 160 220"
-        className={`w-full h-full drop-shadow-[0_10px_25px_rgba(2,132,199,0.45)] ${
+        className={`w-full h-full drop-shadow-[0_10px_25px_rgba(2,132,199,0.35)] ${
           animated ? 'animate-[bounce_3s_ease-in-out_infinite]' : ''
         }`}
         fill="none"
@@ -41,11 +41,11 @@ export const Mascot: React.FC<MascotProps> = ({
       >
         <defs>
           <radialGradient id={`glassSphere_${s}`} cx="38%" cy="32%" r="65%">
-            <stop offset="0%" stopColor="#e0f2fe" stopOpacity="0.85" />
-            <stop offset="25%" stopColor="#38bdf8" stopOpacity="0.45" />
-            <stop offset="60%" stopColor="#0284c7" stopOpacity="0.3" />
-            <stop offset="90%" stopColor="#0369a1" stopOpacity="0.65" />
-            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.95" />
+            <stop offset="0%" stopColor={p.glassStop0 || '#ffffff'} />
+            <stop offset="25%" stopColor={p.glassStop25 || '#93c5fd'} />
+            <stop offset="60%" stopColor={p.glassStop60 || '#3b82f6'} />
+            <stop offset="90%" stopColor={p.glassStop90 || '#1d4ed8'} />
+            <stop offset="100%" stopColor={p.glassStop100 || '#60a5fa'} />
           </radialGradient>
           <linearGradient id={`bodySuitGrad_${s}`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={p.suitGradStart} />
@@ -56,6 +56,10 @@ export const Mascot: React.FC<MascotProps> = ({
             <stop offset="0%" stopColor={p.capeGradStart} />
             <stop offset="50%" stopColor={p.capeGradMid} />
             <stop offset="100%" stopColor={p.capeGradEnd} />
+          </linearGradient>
+          <linearGradient id={`visorGrad_${s}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={p.visorBgStart || '#1e3a8a'} />
+            <stop offset="100%" stopColor={p.visorBgEnd || '#0f172a'} />
           </linearGradient>
           <linearGradient id={`bootGrad_${s}`} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor={p.bootHighlight} />
@@ -108,7 +112,7 @@ export const Mascot: React.FC<MascotProps> = ({
           strokeWidth="1.5"
         />
 
-        {/* Dlicom 'D' Emblem */}
+        {/* Character Emblem */}
         <g transform="translate(73, 98)">
           <path d="M 0 0 L 7 0 C 13 0, 16 3, 16 8 C 16 13, 13 16, 7 16 L 0 16 Z" fill={p.emblemBg} />
           <path d="M 4 4 L 7 4 C 10 4, 11 5.5, 11 8 C 11 10.5, 10 12, 7 12 L 4 12 Z" fill={p.emblemText} />
@@ -139,18 +143,18 @@ export const Mascot: React.FC<MascotProps> = ({
         <circle cx="114" cy="130" r="8.5" fill={p.gloveColor} />
 
         {/* Glass Helmet Outer */}
-        <circle cx="80" cy="48" r="44" fill={`url(#glassSphere_${s})`} stroke="#38bdf8" strokeWidth="2.5" />
-        <circle cx="80" cy="48" r="42" fill="none" stroke="#7dd3fc" strokeWidth="1" strokeOpacity="0.6" />
+        <circle cx="80" cy="48" r="44" fill={`url(#glassSphere_${s})`} stroke={p.glassStroke || '#38bdf8'} strokeWidth="2.5" />
+        <circle cx="80" cy="48" r="42" fill="none" stroke={p.glassStroke || '#7dd3fc'} strokeWidth="1" strokeOpacity="0.6" />
 
         {/* Dome Glass Arc Highlights */}
-        <path d="M 52 38 Q 66 32 80 40 T 108 34" stroke="#e0f2fe" strokeWidth="1.6" strokeOpacity="0.45" strokeLinecap="round" fill="none" />
-        <path d="M 54 58 Q 68 64 80 56 T 106 62" stroke="#38bdf8" strokeWidth="1.4" strokeOpacity="0.4" strokeLinecap="round" fill="none" />
+        <path d="M 52 38 Q 66 32 80 40 T 108 34" stroke={p.glassStop0 || '#ffffff'} strokeWidth="1.6" strokeOpacity="0.5" strokeLinecap="round" fill="none" />
+        <path d="M 54 58 Q 68 64 80 56 T 106 62" stroke={p.glassStroke || '#38bdf8'} strokeWidth="1.4" strokeOpacity="0.4" strokeLinecap="round" fill="none" />
 
         {/* Visor Screen */}
         <path
           d="M 52 32 C 52 22, 60 16, 72 16 L 88 16 C 100 16, 108 22, 108 32 L 108 46 C 108 56, 100 62, 88 62 L 85 62 L 83 69 L 79 62 L 72 62 C 60 62, 52 56, 52 46 Z"
-          fill="#2563eb"
-          stroke="#60a5fa"
+          fill={`url(#visorGrad_${s})`}
+          stroke={p.visorStroke || '#60a5fa'}
           strokeWidth="2.2"
         />
 
@@ -165,8 +169,8 @@ export const Mascot: React.FC<MascotProps> = ({
           <g>
             <defs>
               <g id={`eyeShape_${s}`}>
-                <path d="M 0 -4.5 L 8.0 3.5 L 5.7 5.7 L 0 0 L -5.7 5.7 L -8.0 3.5 Z" fill="#ffffff" />
-                <polygon points="0,0 5.7,5.7 0,11.4 -5.7,5.7" fill="#0f172a" />
+                <path d="M 0 -4.5 L 8.0 3.5 L 5.7 5.7 L 0 0 L -5.7 5.7 L -8.0 3.5 Z" fill={p.eyeColor || '#ffffff'} />
+                <polygon points="0,0 5.7,5.7 0,11.4 -5.7,5.7" fill={p.visorBgEnd || '#0f172a'} />
               </g>
             </defs>
             <g transform="translate(68, 38) rotate(-90) translate(0, -3.8)">
@@ -175,13 +179,13 @@ export const Mascot: React.FC<MascotProps> = ({
             <g transform="translate(93, 37) rotate(-28) translate(0, -3.8)">
               <use href={`#eyeShape_${s}`} />
             </g>
-            <path d="M 76.5 48.5 Q 80 53.5 83.5 48.5" stroke="#0f172a" strokeWidth="3.2" strokeLinecap="round" fill="none" />
+            <path d="M 76.5 48.5 Q 80 53.5 83.5 48.5" stroke={p.smileColor || '#ffffff'} strokeWidth="3.2" strokeLinecap="round" fill="none" />
           </g>
         )}
 
         {/* Dome Glass Reflections */}
         <path d="M 96 14 C 112 20, 120 32, 122 46" stroke="#ffffff" strokeWidth="4.5" strokeLinecap="round" strokeOpacity="0.85" />
-        <path d="M 46 28 C 42 38, 42 52, 46 62" stroke="#bae6fd" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.6" />
+        <path d="M 46 28 C 42 38, 42 52, 46 62" stroke={p.glassStop25 || '#bae6fd'} strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.6" />
         <circle cx="110" cy="22" r="2.5" fill="#ffffff" />
       </svg>
     </div>

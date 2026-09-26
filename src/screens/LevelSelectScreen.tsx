@@ -174,7 +174,12 @@ export const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
                     </span>
                     <span>•</span>
                     <span className="text-cyan-300 font-bold">
-                      ☁️ {zone.defaultWeather}
+                      {zone.defaultWeather === 'Code Freeze'
+                        ? '❄️'
+                        : zone.defaultWeather === 'Glitch Storm'
+                          ? '⚡'
+                          : '🌧️'}{' '}
+                      {zone.defaultWeather}
                     </span>
                     <span>•</span>
                     <span className="text-slate-400">
